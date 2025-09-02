@@ -51,7 +51,7 @@ class ButterflyDataset(utils.Dataset):
         image_dir = "{}/{}/images".format(dataset_dir, subset)
 
         class_ids = sorted(coco.getCatIds())
-        image_ids = list(coco.imgs.keys)
+        image_ids = list(coco.imgs.keys())
 
         for i in class_ids:
             self.add_class("coco", i, coco.loadCats(i)[0]["name"])
@@ -136,8 +136,8 @@ def train(model, dataset_dir):
 
     augmentation = iaa.Sequential(
         [
-            iaa.fliplr(0.5),
-            iaa.flipud(0.5),
+            iaa.Fliplr(0.5),
+            iaa.Flipud(0.5),
             iaa.Crop(percent=(0, 0.1)),
             iaa.LinearContrast((0.75, 1.5)),
             iaa.AdditiveGaussianNoise(loc=0, scale=(0, 0.05*255), per_channel=0.5),
@@ -160,15 +160,15 @@ def train(model, dataset_dir):
                 augmentation=augmentation)
 
 
+if __name__ == "__main__":
+    config = ButterflyConfig()
+    model = modellib.MaskRCNN(mode="training", config=config, model_dir=MODEL_DIR)
+    model.load_weights(COCO_MODEL_PATH, by_name=True,
+                    exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", 
+                                    "mrcnn_bbox", "mrcnn_mask"])
 
-config = ButterflyConfig()
-model = modellib.MaskRCNN(mode="training", config=config, model_dir=MODEL_DIR)
-model.load_weights(COCO_MODEL_PATH, by_name=True,
-                exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", 
-                                "mrcnn_bbox", "mrcnn_mask"])
-
-try:
-    train(model, DATASET_DIR)
-except Exception as e:
-    print("Error", e)
-print("Done")
+    try:
+        train(model, DATASET_DIR)
+    except Exception as e:
+        print("Error", e)
+    print("Done")
